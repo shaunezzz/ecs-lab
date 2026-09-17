@@ -20,7 +20,7 @@ return table.freeze({
 	reliable = replecs.reliable,
 	unreliable = replecs.unreliable,
 	relation = replecs.relation,
-	custom = replecs.custom_handler,
+	custom_handler = replecs.custom_handler,
 
 	name = component<<string>>("Name"),
 	player = component<<Player>>("Player"),

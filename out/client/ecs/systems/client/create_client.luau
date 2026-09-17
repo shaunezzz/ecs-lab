@@ -7,7 +7,7 @@ const phases = require("@game/ReplicatedStorage/shared/ecs/phases")
 
 const local_player = Players.LocalPlayer
 
-const Custom = components.custom
+const CustomHandler = components.custom_handler
 const Client = components.client
 const Player = components.player
 
@@ -16,7 +16,7 @@ const function create_client(world: jecs.World)
 		world:add(client_id, Client)
 		world:set(client_id, Player, local_player)
 
-		world:set(Player, Custom, function(player: Player)
+		world:set(Player, CustomHandler, function(player: Player)
 			return jecs_utils.ref[player]
 		end)
 	end)
