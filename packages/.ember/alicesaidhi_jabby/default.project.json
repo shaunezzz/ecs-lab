@@ -1,0 +1,12 @@
+{
+  "name": "alicesaidhi_jabby",
+  "tree": {
+    "$className": "Folder",
+    "packages": {
+      "$path": "packages"
+    },
+    "src": {
+      "$path": "src"
+    }
+  }
+}

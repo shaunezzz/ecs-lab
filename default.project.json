@@ -1,0 +1,25 @@
+{
+  "name": "best-ecs-setup",
+  "emitLegacyScripts": false,
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "packages": {
+        "$path": "packages"
+      },
+      "client": {
+          "$path": "src/client"
+      },
+      "shared": {
+        "$path": "src/shared"
+      }
+    },
+
+    "ServerScriptService": {
+      "server": {
+        "$path": "src/server"
+      }
+    }
+  }
+}

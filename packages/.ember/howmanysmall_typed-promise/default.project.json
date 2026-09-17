@@ -1,0 +1,12 @@
+{
+  "name": "howmanysmall_typed-promise",
+  "tree": {
+    "$className": "Folder",
+    "packages": {
+      "$path": "packages"
+    },
+    "src": {
+      "$path": "src"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "yetanotherclown_planck",
+  "tree": {
+    "$className": "Folder",
+    "src": {
+      "$path": "src"
+    }
+  }
+}

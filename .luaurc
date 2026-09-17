@@ -1,0 +1,10 @@
+{
+    "languageMode": "nonstrict",
+    "aliases": {
+        "pkg": "packages",
+
+        "client": "src/client",
+        "server": "src/server",
+        "shared": "src/shared"
+    }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "evaera_promise",
+  "tree": {
+    "$className": "Folder",
+    "lib": {
+      "$path": "lib"
+    }
+  }
+}

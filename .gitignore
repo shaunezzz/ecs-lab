@@ -1,0 +1,10 @@
+# Project place file
+/best-ecs-setup.rbxlx
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
+
+sourcemap.json
+.ember-patch/
+.larvae

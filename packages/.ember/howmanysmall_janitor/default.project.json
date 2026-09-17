@@ -1,0 +1,12 @@
+{
+  "name": "howmanysmall_janitor",
+  "tree": {
+    "$className": "Folder",
+    "packages": {
+      "$path": "packages"
+    },
+    "src": {
+      "$path": "src"
+    }
+  }
+}

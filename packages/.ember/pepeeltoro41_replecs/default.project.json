@@ -1,0 +1,12 @@
+{
+  "name": "pepeeltoro41_replecs",
+  "tree": {
+    "$className": "Folder",
+    "packages": {
+      "$path": "packages"
+    },
+    "src": {
+      "$path": "src"
+    }
+  }
+}

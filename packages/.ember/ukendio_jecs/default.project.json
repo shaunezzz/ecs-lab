@@ -1,0 +1,12 @@
+{
+  "name": "ukendio_jecs",
+  "tree": {
+    "$className": "Folder",
+    "src": {
+      "$className": "Folder",
+      "jecs": {
+        "$path": "src/jecs.luau"
+      }
+    }
+  }
+}

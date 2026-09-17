@@ -1,0 +1,32 @@
+input = "src"
+output = "out"
+target = "roblox-string"
+
+[fmt]
+recommended = true
+column_width = 120
+indent_type = "tabs"
+indent_width = 4
+quote_style = "auto-prefer-double"
+require_binding = "const"
+function_call.style = "hug-last"
+
+[fmt.sort_requires]
+enabled = true
+grouping = "by-kind"
+
+[lint]
+recommended = true
+std = "roblox"
+
+[aliases]
+pkg = "./packages"
+client = "./src/client"
+server = "./src/server"
+shared = "./src/shared"
+
+[requires.mounts]
+"packages" = "@game/ReplicatedStorage/packages"
+"src/client" = "@game/ReplicatedStorage/client"
+"src/server" = "@game/ServerScriptService/server"
+"src/shared" = "@game/ReplicatedStorage/shared"

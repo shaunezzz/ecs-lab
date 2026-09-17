@@ -1,0 +1,37 @@
+# Manifest for this project. See https://luaupm.com/docs
+# Add dependencies with `embr add <scope/name>`, then run `embr install`.
+
+[target]
+environment = "shared"
+
+[indices]
+wally = "https://github.com/UpliftGames/wally-index"
+pesde = "https://github.com/pesde-pkg/index"
+default = "https://github.com/UpliftGames/wally-index"
+
+[dependencies]
+promise = { name = "evaera/promise", version = "^4.0.0" }
+janitor = { name = "howmanysmall/janitor", version = "^1.18.3" }
+
+jecs = { name = "ukendio/jecs", version = "^0.11.0" }
+jecs_utils = { name = "pepeeltoro41/jecs-utils", version = "^1.4.4" }
+replecs = { name = "pepeeltoro41/replecs", version = "^0.4.0-rc.3" }
+
+planck = { name = "yetanotherclown/planck", version = "^0.3.0-alpha.1" }
+planck_rs = { name = "yetanotherclown/planck-runservice", version = "^0.2.0" }
+planck_jabby = { name = "yetanotherclown/planck-jabby", version = "^0.3.0-alpha.1" }
+
+jabby = { name = "alicesaidhi/jabby", version = "^0.6.1" }
+
+[overrides]
+"replecs.jecs" = "jecs"
+"jecs_utils.jecs" = "jecs"
+"jabby.jecs" = "jecs"
+"planck_rs.Planck" = "planck"
+"planck_jabby.Jabby" = "jabby"
+
+[config]
+shared-packages-out = "packages"
+
+[scripts]
+serve = ["larvae process -w", "rojo serve .larvae/build.project.json"]
