@@ -26,6 +26,10 @@ return table.freeze({
 	player = component<<Player>>("Player"),
 	client = tag("Client"),
 
+	model = component<<Model>>("Model"),
+	client_position = component<<Vector3>>("ClientPosition"),
+	server_position = component<<Vector3>>("ServerPosition"),
+
 	lifetime = component<<number>>("Lifetime"),
 	destroy = tag("Destroy"),
 })

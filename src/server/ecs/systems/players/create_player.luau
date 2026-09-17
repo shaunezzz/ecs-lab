@@ -6,19 +6,21 @@ const replicator = require("@server/ecs/replicator")
 const components = require("@shared/ecs/components")
 const player_prefab = require("@shared/ecs/prefabs/player_prefab")
 
-local player_added = jecs_utils.collect(Players.PlayerAdded)
-
 const Player = components.player
 
 const function create_player(world: jecs.World)
-	for player in player_added do
-		local player_id = player_prefab(player)
+	local player_added = jecs_utils.collect(Players.PlayerAdded)
 
-		replicator:set_networked(player_id)
-		replicator:set_reliable(player_id, Player)
-		replicator:set_custom(player_id, Player)
+	return function()
+		for player in player_added do
+			local player_id = player_prefab(player)
 
-		print("New player entity:", player_id)
+			replicator:set_networked(player_id)
+			replicator:set_reliable(player_id, Player)
+			replicator:set_custom(player_id, Player)
+
+			print("New player entity:", player_id)
+		end
 	end
 end
 

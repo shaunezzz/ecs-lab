@@ -148,10 +148,7 @@ local Queue: any = {
     Unreliable = table.create(256)
 }
 
-export type Variants = { any }
 export type UUID = string
-export type Player = Player
-export type Character = Model
 
 
 

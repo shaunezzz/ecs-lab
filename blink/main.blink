@@ -5,25 +5,31 @@ option TypesOutput = "../src/shared/types.luau"
 option ServerOutput = "../src/server/blink.luau"
 option ClientOutput = "../src/client/blink.luau"
 
-type Variants = unknown[]
 type UUID = string(36)
 
-function receive_full {
-    Yield: Promise,
-    Data: (),
-    Return: (buffer?, Variants?)
+event request_full {
+    From: Client,
+    Type: Reliable,
+    Call: Polling,
+}
+
+event send_full {
+    From: Server,
+    Type: Reliable,
+    Call: Polling,
+    Data: (buffer, unknown)
 }
 
 event send_unreliables {
     From: Server,
     Type: Unreliable,
     Call: Polling,
-    Data: (buffer, Variants?)
+    Data: (buffer, unknown)
 }
 
 event send_reliables {
     From: Server,
     Type: Reliable,
     Call: Polling,
-    Data: (buffer, Variants?)
+    Data: (buffer, unknown)
 }

@@ -162,93 +162,57 @@ local Queue: any = {
 
 local SerdesEvent = "?"
 local SerdesThread: thread?
-Queue.Reliable[0] = table.create(256)
-export type Variants = { any }
+Queue.Reliable[0] = CreateQueue()
 export type UUID = string
-export type Player = Player
-export type Character = Model
-function SerdesFunctions.ReadFUNCTION_DATA_receive_full(): (nil)
-	return Value
+function SerdesFunctions.ReadEVENT_request_full(): (nil)
+	return nil
 end
 
-function SerdesFunctions.WriteFUNCTION_RETURN_receive_full(Value1: buffer?, Value2: { any }?, InvocationIdentifier: number): ()
-	-- Allocate BLOCK: 5 bytes
-	local BLOCK_START = Allocate(5)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
-	buffer.writeu8(SendBuffer, BLOCK_START + 1, InvocationIdentifier)
-	buffer.writeu8(SendBuffer, BLOCK_START + 2, 1)
-	buffer.writeu8(SendBuffer, BLOCK_START + 3, Value1 ~= nil and 1 or 0)
-	if Value1 ~= nil then
-		-- Allocate BLOCK: 2 bytes
-		local BLOCK_START = Allocate(2)
-		local Length = buffer.len(Value1)
-		buffer.writeu16(SendBuffer, BLOCK_START + 0, Length)
-		Allocate(Length)
-		buffer.copy(SendBuffer, SendOffset, Value1, 0, Length)
-	end
-	buffer.writeu8(SendBuffer, BLOCK_START + 4, Value2 ~= nil and 1 or 0)
-	if Value2 ~= nil then
-		-- Allocate BLOCK: 2 bytes
-		local BLOCK_START = Allocate(2)
-		-- START ARRAY
-		buffer.writeu16(SendBuffer, BLOCK_START + 0, #Value2)
-		for Index = 1, #Value2 do
-			local Item_2 = Value2[Index]
-			table.insert(SendInstances, if Item_2 == nil then Null else Item_2)
-		end
-		-- END ARRAY
-	end
-end
-
-function SerdesFunctions.WriteEVENT_send_unreliables(Value1: buffer, Value2: { any }?): ()
-	-- Allocate BLOCK: 4 bytes
-	local BLOCK_START = Allocate(4)
-	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
-	local Length = buffer.len(Value1)
-	buffer.writeu16(SendBuffer, BLOCK_START + 1, Length)
-	Allocate(Length)
-	buffer.copy(SendBuffer, SendOffset, Value1, 0, Length)
-	buffer.writeu8(SendBuffer, BLOCK_START + 3, Value2 ~= nil and 1 or 0)
-	if Value2 ~= nil then
-		-- Allocate BLOCK: 2 bytes
-		local BLOCK_START = Allocate(2)
-		-- START ARRAY
-		buffer.writeu16(SendBuffer, BLOCK_START + 0, #Value2)
-		for Index = 1, #Value2 do
-			local Item_2 = Value2[Index]
-			table.insert(SendInstances, if Item_2 == nil then Null else Item_2)
-		end
-		-- END ARRAY
-	end
-end
-
-function SerdesFunctions.WriteEVENT_send_reliables(Value1: buffer, Value2: { any }?): ()
-	-- Allocate BLOCK: 4 bytes
-	local BLOCK_START = Allocate(4)
+function SerdesFunctions.WriteEVENT_send_full(Value1: buffer, Value2: any): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 1)
 	local Length = buffer.len(Value1)
 	buffer.writeu16(SendBuffer, BLOCK_START + 1, Length)
 	Allocate(Length)
 	buffer.copy(SendBuffer, SendOffset, Value1, 0, Length)
-	buffer.writeu8(SendBuffer, BLOCK_START + 3, Value2 ~= nil and 1 or 0)
-	if Value2 ~= nil then
-		-- Allocate BLOCK: 2 bytes
-		local BLOCK_START = Allocate(2)
-		-- START ARRAY
-		buffer.writeu16(SendBuffer, BLOCK_START + 0, #Value2)
-		for Index = 1, #Value2 do
-			local Item_2 = Value2[Index]
-			table.insert(SendInstances, if Item_2 == nil then Null else Item_2)
-		end
-		-- END ARRAY
-	end
+	table.insert(SendInstances, if Value2 == nil then Null else Value2)
+end
+
+function SerdesFunctions.WriteEVENT_send_unreliables(Value1: buffer, Value2: any): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
+	local Length = buffer.len(Value1)
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, Length)
+	Allocate(Length)
+	buffer.copy(SendBuffer, SendOffset, Value1, 0, Length)
+	table.insert(SendInstances, if Value2 == nil then Null else Value2)
+end
+
+function SerdesFunctions.WriteEVENT_send_reliables(Value1: buffer, Value2: any): ()
+	-- Allocate BLOCK: 3 bytes
+	local BLOCK_START = Allocate(3)
+	buffer.writeu8(SendBuffer, BLOCK_START + 0, 2)
+	local Length = buffer.len(Value1)
+	buffer.writeu16(SendBuffer, BLOCK_START + 1, Length)
+	Allocate(Length)
+	buffer.copy(SendBuffer, SendOffset, Value1, 0, Length)
+	table.insert(SendInstances, if Value2 == nil then Null else Value2)
 end
 
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
-	receive_full = {
-		on = NOOP
+	request_full = {
+		iter = NOOP,
+		next = NOOP
+	},
+	send_full = {
+		fire = NOOP,
+		fire_all = NOOP,
+		fire_list = NOOP,
+		fire_except = NOOP
 	},
 	send_unreliables = {
 		fire = NOOP,
@@ -325,18 +289,7 @@ Reliable.OnServerEvent:Connect(function(Player: Player, Buffer: buffer, Instance
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
 		if Index == 0 then
-			-- Read BLOCK: 1 bytes
-			local BLOCK_START = Read(1)
-			local InvocationIdentifier = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
-			local Value: nil = SerdesFunctions.ReadFUNCTION_DATA_receive_full()
-			if Events.Reliable[0] ~= nil then
-				task.spawn(Events.Reliable[0], Player, Value, InvocationIdentifier)
-			else
-				if #Queue.Reliable[0] > 256 then
-					warn("[Blink]: Event queue of \"receive_full\" exceeded 256, did you forget to implement a listener?")
-				end
-				table.insert(Queue.Reliable[0], {Player, Value, InvocationIdentifier} :: {any})
-			end
+			Push(Queue.Reliable[0], table.pack(Player, SerdesFunctions.ReadEVENT_request_full()))
 		end
 	end
 end)
@@ -362,50 +315,95 @@ end)
 local Returns = table.freeze({
 	step_replication = StepReplication,
 
-	receive_full = {
-		on = function(Listener: (Player, nil) -> (buffer?, { any }?)): ()
-			Events.Reliable[0] = function(Player: Player, Value: nil, InvocationIdentifier: number): ()
-				local ReturnValue1: buffer?, ReturnValue2: { any }?;
-				local Success, Error = pcall(function ()
-					ReturnValue1, ReturnValue2 = Listener(Player, Value)
-				end)
-				Load(PlayersMap[Player])
-				if Success ~= true then
-					local Position = Allocate(3)
-					buffer.writeu8(SendBuffer, Position, 0)
-					buffer.writeu8(SendBuffer, Position + 1, InvocationIdentifier)
-					buffer.writeu8(SendBuffer, Position + 2, 0)
-					warn(`"receive_full" encountered an error, {Error}`)
-				else
-					SerdesFunctions.WriteFUNCTION_RETURN_receive_full(ReturnValue1, ReturnValue2, InvocationIdentifier)
+	request_full = {
+		iter = function(): () -> (number, Player, nil)
+			local index = 0
+			local queue = Queue.Reliable[0]
+			return function (): (number, Player, nil)
+				index += 1
+				local arguments = Pop(queue)
+				if arguments ~= nil then
+					return index, unpack(arguments, 1, arguments.n)
 				end
-				PlayersMap[Player] = Save()
+				return 
 			end
-			task.spawn(function (): ()
-				local EventQueue = Queue.Reliable[0] or {}
-				Queue.Reliable[0] = nil
-				for Index, Arguments in EventQueue do
-					Events.Reliable[0](table.unpack(Arguments))
+		end,
+		--- @deprecated v0.14.1 -- Use `Iter` instead.
+		next = function(): () -> (number, Player, nil)
+			local index = 0
+			local queue = Queue.Reliable[0]
+			return function (): (number, Player, nil)
+				index += 1
+				local arguments = Pop(queue)
+				if arguments ~= nil then
+					return index, unpack(arguments, 1, arguments.n)
 				end
-			end)
+				return 
+			end
 		end
 	},
+	send_full = {
+		fire = function(Player: Player, Value1: buffer, Value2: any): ()
+			Load(PlayersMap[Player])
+			SerdesFunctions.WriteEVENT_send_full(Value1, Value2)
+			PlayersMap[Player] = Save()
+		end,
+		fire_all = function(Value1: buffer, Value2: any): ()
+			Load()
+			SerdesFunctions.WriteEVENT_send_full(Value1, Value2)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		fire_list = function(List: {Player}, Value1: buffer, Value2: any): ()
+			Load()
+			SerdesFunctions.WriteEVENT_send_full(Value1, Value2)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in List do
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+		fire_except = function(Except: Player, Value1: buffer, Value2: any): ()
+			Load()
+			SerdesFunctions.WriteEVENT_send_full(Value1, Value2)
+			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
+			for _, Player in Players:GetPlayers() do
+				if Player == Except then
+					continue
+				end
+				Load(PlayersMap[Player])
+				local Position = Allocate(Size)
+				buffer.copy(SendBuffer, Position, Buffer, 0, Size)
+				table.move(Instances, 1, #Instances, #SendInstances + 1, SendInstances)
+				PlayersMap[Player] = Save()
+			end
+		end,
+	},
 	send_unreliables = {
-		fire = function(Player: Player, Value1: buffer, Value2: { any }?): ()
+		fire = function(Player: Player, Value1: buffer, Value2: any): ()
 			Load()
 			SerdesFunctions.WriteEVENT_send_unreliables(Value1, Value2)
 			local Buffer = buffer.create(SendCursor)
 			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
 			Unreliable:FireClient(Player, Buffer, SendInstances)
 		end,
-		fire_all = function(Value1: buffer, Value2: { any }?): ()
+		fire_all = function(Value1: buffer, Value2: any): ()
 			Load()
 			SerdesFunctions.WriteEVENT_send_unreliables(Value1, Value2)
 			local Buffer = buffer.create(SendCursor)
 			buffer.copy(Buffer, 0, SendBuffer, 0, SendCursor)
 			Unreliable:FireAllClients(Buffer, SendInstances)
 		end,
-		fire_list = function(List: {Player}, Value1: buffer, Value2: { any }?): ()
+		fire_list = function(List: {Player}, Value1: buffer, Value2: any): ()
 			Load()
 			SerdesFunctions.WriteEVENT_send_unreliables(Value1, Value2)
 			local Buffer = buffer.create(SendCursor)
@@ -414,7 +412,7 @@ local Returns = table.freeze({
 				Unreliable:FireClient(Player, Buffer, SendInstances)
 			end
 		end,
-		fire_except = function(Except: Player, Value1: buffer, Value2: { any }?): ()
+		fire_except = function(Except: Player, Value1: buffer, Value2: any): ()
 			Load()
 			SerdesFunctions.WriteEVENT_send_unreliables(Value1, Value2)
 			local Buffer = buffer.create(SendCursor)
@@ -428,12 +426,12 @@ local Returns = table.freeze({
 		end,
 	},
 	send_reliables = {
-		fire = function(Player: Player, Value1: buffer, Value2: { any }?): ()
+		fire = function(Player: Player, Value1: buffer, Value2: any): ()
 			Load(PlayersMap[Player])
 			SerdesFunctions.WriteEVENT_send_reliables(Value1, Value2)
 			PlayersMap[Player] = Save()
 		end,
-		fire_all = function(Value1: buffer, Value2: { any }?): ()
+		fire_all = function(Value1: buffer, Value2: any): ()
 			Load()
 			SerdesFunctions.WriteEVENT_send_reliables(Value1, Value2)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
@@ -445,7 +443,7 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		fire_list = function(List: {Player}, Value1: buffer, Value2: { any }?): ()
+		fire_list = function(List: {Player}, Value1: buffer, Value2: any): ()
 			Load()
 			SerdesFunctions.WriteEVENT_send_reliables(Value1, Value2)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances
@@ -457,7 +455,7 @@ local Returns = table.freeze({
 				PlayersMap[Player] = Save()
 			end
 		end,
-		fire_except = function(Except: Player, Value1: buffer, Value2: { any }?): ()
+		fire_except = function(Except: Player, Value1: buffer, Value2: any): ()
 			Load()
 			SerdesFunctions.WriteEVENT_send_reliables(Value1, Value2)
 			local Buffer, Size, Instances = SendBuffer, SendCursor, SendInstances

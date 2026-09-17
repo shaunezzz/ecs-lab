@@ -1,9 +1,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 const components = require("@game/ReplicatedStorage/shared/ecs/components")
-const blink = require("@self/blink")
 const replicator = require("@self/ecs/replicator")
 const startup = require("@game/ReplicatedStorage/shared/ecs/startup")
+const world = require("@game/ReplicatedStorage/shared/ecs/world")
 
 local systems = {}
 
@@ -18,8 +18,4 @@ add_systems(ReplicatedStorage.client.ecs.systems)
 add_systems(ReplicatedStorage.shared.ecs.systems)
 startup(systems)
 
-replicator:init()
-blink.receive_full.invoke():andThen(function(buf, variants)
-	print("receive full invoked")
-	replicator:apply_full(buf, variants)
-end)
+replicator:init(world)

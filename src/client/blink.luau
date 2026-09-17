@@ -161,109 +161,58 @@ local Queue: any = {
 
 local SerdesEvent = "?"
 local SerdesThread: thread?
-Queue.Reliable[0] = table.create(256)
-Queue.Unreliable[0] = CreateQueue()
 Queue.Reliable[1] = CreateQueue()
-export type Variants = { any }
+Queue.Unreliable[0] = CreateQueue()
+Queue.Reliable[2] = CreateQueue()
 export type UUID = string
-export type Player = Player
-export type Character = Model
-function SerdesFunctions.WriteFUNCTION_DATA_receive_full(Value: nil, InvocationIdentifier: number): ()
-	-- Allocate BLOCK: 2 bytes
-	local BLOCK_START = Allocate(2)
+function SerdesFunctions.WriteEVENT_request_full(Value: nil): ()
+	-- Allocate BLOCK: 1 bytes
+	local BLOCK_START = Allocate(1)
 	buffer.writeu8(SendBuffer, BLOCK_START + 0, 0)
-	buffer.writeu8(SendBuffer, BLOCK_START + 1, InvocationIdentifier)
 end
 
-function SerdesFunctions.ReadFUNCTION_RETURN_receive_full(): (buffer?, { any }?)
-	-- Read BLOCK: 3 bytes
-	local BLOCK_START = Read(3)
-	local Success = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
-	if Success ~= 1 then
-		error("Server encountered an error.")
-	end
-	local Value1
-	if buffer.readu8(RecieveBuffer, BLOCK_START + 1) == 1 then
-		-- Read BLOCK: 2 bytes
-		local BLOCK_START = Read(2)
-		local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
-		Value1 = buffer.create(Length)
-		buffer.copy(Value1, 0, RecieveBuffer, Read(Length), Length)
-	end
-	local Value2
-	if buffer.readu8(RecieveBuffer, BLOCK_START + 2) == 1 then
-		-- Read BLOCK: 2 bytes
-		local BLOCK_START = Read(2)
-		-- START ARRAY
-		local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
-		if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
-		if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
-		Value2 = table.create(Length)
-		for Index = 1, Length do
-			RecieveInstanceCursor += 1
-			local Item_2 = RecieveInstances[RecieveInstanceCursor]
-			table.insert(Value2, Item_2)
-		end
-		-- END ARRAY
-	end
-	return Value1, Value2
-end
-
-function SerdesFunctions.ReadEVENT_send_unreliables(): (buffer, { any }?)
-	-- Read BLOCK: 3 bytes
-	local BLOCK_START = Read(3)
+function SerdesFunctions.ReadEVENT_send_full(): (buffer, any)
+	-- Read BLOCK: 2 bytes
+	local BLOCK_START = Read(2)
 	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
 	local Value1 = buffer.create(Length)
 	buffer.copy(Value1, 0, RecieveBuffer, Read(Length), Length)
-	local Value2
-	if buffer.readu8(RecieveBuffer, BLOCK_START + 2) == 1 then
-		-- Read BLOCK: 2 bytes
-		local BLOCK_START = Read(2)
-		-- START ARRAY
-		Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
-		if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
-		if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
-		Value2 = table.create(Length)
-		for Index = 1, Length do
-			RecieveInstanceCursor += 1
-			local Item_2 = RecieveInstances[RecieveInstanceCursor]
-			table.insert(Value2, Item_2)
-		end
-		-- END ARRAY
-	end
+	RecieveInstanceCursor += 1
+	local Value2 = RecieveInstances[RecieveInstanceCursor]
 	return Value1, Value2
 end
 
-function SerdesFunctions.ReadEVENT_send_reliables(): (buffer, { any }?)
-	-- Read BLOCK: 3 bytes
-	local BLOCK_START = Read(3)
+function SerdesFunctions.ReadEVENT_send_unreliables(): (buffer, any)
+	-- Read BLOCK: 2 bytes
+	local BLOCK_START = Read(2)
 	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
 	local Value1 = buffer.create(Length)
 	buffer.copy(Value1, 0, RecieveBuffer, Read(Length), Length)
-	local Value2
-	if buffer.readu8(RecieveBuffer, BLOCK_START + 2) == 1 then
-		-- Read BLOCK: 2 bytes
-		local BLOCK_START = Read(2)
-		-- START ARRAY
-		Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
-		if Length < 0 then error(`Expected "Length" to be larger than 0, got {Length} instead.`) end
-		if Length > 65535 then error(`Expected "Length" to be smaller than 65535, got {Length} instead.`) end
-		Value2 = table.create(Length)
-		for Index = 1, Length do
-			RecieveInstanceCursor += 1
-			local Item_2 = RecieveInstances[RecieveInstanceCursor]
-			table.insert(Value2, Item_2)
-		end
-		-- END ARRAY
-	end
+	RecieveInstanceCursor += 1
+	local Value2 = RecieveInstances[RecieveInstanceCursor]
+	return Value1, Value2
+end
+
+function SerdesFunctions.ReadEVENT_send_reliables(): (buffer, any)
+	-- Read BLOCK: 2 bytes
+	local BLOCK_START = Read(2)
+	local Length = buffer.readu16(RecieveBuffer, BLOCK_START + 0)
+	local Value1 = buffer.create(Length)
+	buffer.copy(Value1, 0, RecieveBuffer, Read(Length), Length)
+	RecieveInstanceCursor += 1
+	local Value2 = RecieveInstances[RecieveInstanceCursor]
 	return Value1, Value2
 end
 
 if not RunService:IsRunning() then
 	local NOOP = function() end
 	local Returns = table.freeze({
-	receive_full = {
-		invoke = NOOP
+	request_full = {
+		fire = NOOP
+	},
+	send_full = {
+		iter = NOOP,
+		next = NOOP
 	},
 	send_unreliables = {
 		iter = NOOP,
@@ -315,19 +264,10 @@ Reliable.OnClientEvent:Connect(function(Buffer: buffer, Instances: {Instance})
 		-- Read BLOCK: 1 bytes
 		local BLOCK_START = Read(1)
 		local Index = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
-		if Index == 0 then
-			-- Read BLOCK: 1 bytes
-			local BLOCK_START = Read(1)
-			local InvocationIdentifier = buffer.readu8(RecieveBuffer, BLOCK_START + 0)
-				local Success, ReturnValue1, ReturnValue2 = pcall(function ()
-					return SerdesFunctions.ReadFUNCTION_RETURN_receive_full()
-				end)
-			if Calls[InvocationIdentifier] ~= nil then
-				task.spawn(Calls[InvocationIdentifier], Success, ReturnValue1, ReturnValue2)
-				Calls[InvocationIdentifier] = nil
-			end
-		elseif Index == 1 then
-			Push(Queue.Reliable[1], table.pack(SerdesFunctions.ReadEVENT_send_reliables()))
+		if Index == 1 then
+			Push(Queue.Reliable[1], table.pack(SerdesFunctions.ReadEVENT_send_full()))
+		elseif Index == 2 then
+			Push(Queue.Reliable[2], table.pack(SerdesFunctions.ReadEVENT_send_reliables()))
 		end
 	end
 end)
@@ -356,33 +296,16 @@ end)
 local Returns = table.freeze({
 	step_replication = StepReplication,
 
-	receive_full = {
-		invoke = function(Value: nil)
-			return Promise.new(function (Resolve, Reject, OnCancel)
-				local InvocationIdentifier = Invoke()
-				if Calls[InvocationIdentifier] ~= nil then
-					Invocations -= 1
-					error("More than 256 calls are awaiting a response, this packet has been dropped.")
-				end
-				SerdesFunctions.WriteFUNCTION_DATA_receive_full(Value, InvocationIdentifier)
-				Calls[InvocationIdentifier] = coroutine.running()
-				OnCancel(function ()
-					Calls[InvocationIdentifier] = nil
-				end)
-				local Success, ReturnValue1: buffer?, ReturnValue2: { any }? = coroutine.yield()
-				if Success ~= true then
-					Reject("There was an exception while processing \"receive_full\".")
-					return 
-				end
-				Resolve(ReturnValue1, ReturnValue2)
-			end)
+	request_full = {
+		fire = function(Value: nil): ()
+			SerdesFunctions.WriteEVENT_request_full(Value)
 		end
 	},
-	send_unreliables = {
-		iter = function(): () -> (number, buffer, { any }?)
+	send_full = {
+		iter = function(): () -> (number, buffer, any)
 			local index = 0
-			local queue = Queue.Unreliable[0]
-			return function (): (number, buffer, { any }?)
+			local queue = Queue.Reliable[1]
+			return function (): (number, buffer, any)
 				index += 1
 				local arguments = Pop(queue)
 				if arguments ~= nil then
@@ -392,10 +315,37 @@ local Returns = table.freeze({
 			end
 		end,
 		--- @deprecated v0.14.1 -- Use `Iter` instead.
-		next = function(): () -> (number, buffer, { any }?)
+		next = function(): () -> (number, buffer, any)
+			local index = 0
+			local queue = Queue.Reliable[1]
+			return function (): (number, buffer, any)
+				index += 1
+				local arguments = Pop(queue)
+				if arguments ~= nil then
+					return index, unpack(arguments, 1, arguments.n)
+				end
+				return 
+			end
+		end
+	},
+	send_unreliables = {
+		iter = function(): () -> (number, buffer, any)
 			local index = 0
 			local queue = Queue.Unreliable[0]
-			return function (): (number, buffer, { any }?)
+			return function (): (number, buffer, any)
+				index += 1
+				local arguments = Pop(queue)
+				if arguments ~= nil then
+					return index, unpack(arguments, 1, arguments.n)
+				end
+				return 
+			end
+		end,
+		--- @deprecated v0.14.1 -- Use `Iter` instead.
+		next = function(): () -> (number, buffer, any)
+			local index = 0
+			local queue = Queue.Unreliable[0]
+			return function (): (number, buffer, any)
 				index += 1
 				local arguments = Pop(queue)
 				if arguments ~= nil then
@@ -406,10 +356,10 @@ local Returns = table.freeze({
 		end
 	},
 	send_reliables = {
-		iter = function(): () -> (number, buffer, { any }?)
+		iter = function(): () -> (number, buffer, any)
 			local index = 0
-			local queue = Queue.Reliable[1]
-			return function (): (number, buffer, { any }?)
+			local queue = Queue.Reliable[2]
+			return function (): (number, buffer, any)
 				index += 1
 				local arguments = Pop(queue)
 				if arguments ~= nil then
@@ -419,10 +369,10 @@ local Returns = table.freeze({
 			end
 		end,
 		--- @deprecated v0.14.1 -- Use `Iter` instead.
-		next = function(): () -> (number, buffer, { any }?)
+		next = function(): () -> (number, buffer, any)
 			local index = 0
-			local queue = Queue.Reliable[1]
-			return function (): (number, buffer, { any }?)
+			local queue = Queue.Reliable[2]
+			return function (): (number, buffer, any)
 				index += 1
 				local arguments = Pop(queue)
 				if arguments ~= nil then
