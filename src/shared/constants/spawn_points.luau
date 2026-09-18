@@ -1,3 +1,3 @@
 return {
-	default = workspace.SPAWN_POINT.CFrame,
+	default = workspace.SPAWN_POINT.Position,
 }

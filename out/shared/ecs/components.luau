@@ -29,6 +29,7 @@ return table.freeze({
 	model = component<<Model>>("Model"),
 	position = component<<Vector3>>("Position"),
 	velocity = component<<Vector3>>("Velocity"),
+	linear_velocity = component<<LinearVelocity>>("LinearVelocity"),
 
 	lifetime = component<<number>>("Lifetime"),
 	destroy = tag("Destroy"),
