@@ -15,8 +15,11 @@ const function create_player(world: jecs.World)
 		for player in player_added do
 			local player_id = player_prefab(player)
 
+			world:set(player_id, components.server_position, 0)
+
 			replicator:set_networked(player_id)
 			replicator:set_reliable(player_id, Player)
+			replicator:set_reliable(player_id, components.server_position)
 			replicator:set_custom(player_id, Player)
 
 			print("New player entity:", player_id)
