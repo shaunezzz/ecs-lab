@@ -17,12 +17,12 @@ const function create_client(world: jecs.World)
 		world:set(client_id, Player, local_player)
 
 		world:set(Player, CustomHandler, function(player: Player)
-			return jecs_utils.ref[player]
+			return jecs_utils.ref.get(player)
 		end)
 	end)
 end
 
 return {
 	system = create_client,
-	phase = phases.Startup,
+	phases = phases.First,
 }

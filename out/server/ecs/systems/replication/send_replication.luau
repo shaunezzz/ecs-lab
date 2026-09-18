@@ -19,14 +19,12 @@ const function send_replication(world: jecs.World)
 
 			for player, buf, variants in replicator:collect_updates() do
 				blink.send_reliables.fire(player, buf, variants)
-				print("Sent reliable updates")
 			end
 		end
 
 		if unreliable_interval() then
 			for player, buf, variants in replicator:collect_unreliable() do
 				blink.send_unreliables.fire(player, buf, variants)
-				print("Sent unreliables")
 			end
 		end
 	end
